@@ -1,0 +1,122 @@
+
+⃨⃨⃨A⃨import { useState } from 'react'
+import reactLogo from './assets/react.svg'
+import viteLogo from '/vite.svg'
+import './App.css'
+
+function App() {
+  const [count, setCount] = useState(0)
+
+  return (
+    <>
+      <div>
+        <a href="https://vite.dev" target="_blank">
+          <img src={viteLogo} className="logo" alt="Vite logo" />
+        </a>
+        <a href="https://react.dev" target="_blank">
+          <img src={reactLogo} className="logo react" alt="React logo" />
+        </a>
+      </div>
+      <h1>Vite + React</h1>
+      <div className="card">
+        <button onClick={() => setCount((count) => count + 1)}>
+          count is {count}
+        </button>
+        <p>
+          Edit <code>src/App.jsx</code> and save to test HMR
+        </p>
+      </div>
+      <p className="read-the-docs">
+        Click on the Vite and React logos to learn more
+      </p>
+    </>
+  )
+}
+
+export default App
+import { useEffect, useState } from 'react'
+import { supabase } from './supabaseClient'
+import { TrendingUp, AlertTriangle } from 'lucide-react'
+
+export default function App() {
+  const [players, setPlayers] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchPlayers()
+  }, [])
+
+  async function fetchPlayers() {
+    try {
+      // Fetch players from your Supabase table
+      const { data, error } = await supabase.from('players').select('*')
+      if (error) throw error
+      setPlayers(data)
+    } catch (error) {
+      console.log('Error fetching players:', error.message)
+      // Fallback data if table is empty so you see the UI
+      setPlayers([
+        { id: 1, name: 'Haaland', team: 'Man City', price: 14.0, position: 'F' },
+        { id: 2, name: 'Saka', team: 'Arsenal', price: 9.5, position: 'M' },
+        { id: 3, name: 'Salah', team: 'Liverpool', price: 12.5, position: 'F' }
+      ])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const styles = {
+    container: { backgroundColor: '#111827', minHeight: '100vh', color: 'white', padding: '20px', fontFamily: 'sans-serif' },
+    header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' },
+    badge: { backgroundColor: '#1e3a8a', color: '#bfdbfe', padding: '4px 12px', borderRadius: '999px', fontSize: '12px' },
+    aiCard: { backgroundColor: '#1f2937', padding: '16px', borderRadius: '12px', border: '1px solid #3b82f6', marginBottom: '24px' },
+    playerCard: { backgroundColor: 'white', color: 'black', padding: '16px', borderRadius: '12px', marginBottom: '16px' },
+    buyBtn: { width: '100%', backgroundColor: '#111827', color: 'white', padding: '12px', borderRadius: '8px', border: 'none', fontWeight: 'bold', marginTop: '12px' }
+  }
+
+  if (loading) return <div style={styles.container}>Loading Market...</div>
+
+  return (
+    <div style={styles.container}>
+      <div style={styles.header}>
+        <h1 style={{fontSize: '24px', fontWeight: 'bold', color: '#60a5fa'}}>Goal Diggers</h1>
+        <span style={styles.badge}>Beta v0.9</span>
+      </div>
+
+      {/* AI SECTION */}
+      <div style={styles.aiCard}>
+        <div style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px'}}>
+          <TrendingUp color="#c084fc" size={20} />
+          <h2 style={{fontWeight: 'bold', color: '#f3e8ff'}}>Aetherium AI Insights</h2>
+        </div>
+        <div style={{backgroundColor: 'rgba(55, 65, 81, 0.5)', padding: '12px', borderRadius: '8px'}}>
+          <div style={{display: 'flex', justifyContent: 'space-between'}}>
+            <span style={{fontWeight: 'bold'}}>Haaland</span>
+            <span style={{color: '#4ade80', fontSize: '12px', fontWeight: 'bold'}}>↗ STRONG BUY</span>
+          </div>
+          <p style={{fontSize: '12px', color: '#9ca3af', marginTop: '4px'}}>Undervalued compared to league average.</p>
+          <div style={{marginTop: '8px', fontSize: '12px', color: '#9ca3af'}}>
+            AI Confidence: <span style={{color: '#60a5fa'}}>77.0%</span>
+          </div>
+        </div>
+      </div>
+
+      <h3 style={{fontSize: '20px', fontWeight: 'bold', marginBottom: '16px'}}>Active Market</h3>
+
+      {players.map((player) => (
+        <div key={player.id} style={styles.playerCard}>
+          <div style={{display: 'flex', justifyContent: 'space-between'}}>
+            <div>
+              <h4 style={{fontSize: '18px', fontWeight: 'bold', margin: 0}}>{player.name}</h4>
+              <p style={{fontSize: '12px', color: '#6b7280', margin: 0}}>{player.position} • {player.team}</p>
+            </div>
+            <span style={{backgroundColor: '#dcfce7', color: '#166534', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold'}}>
+              ${player.price}M
+            </span>
+          </div>
+          <button style={styles.buyBtn}>Buy Player</button>
+        </div>
+      ))}
+    </div>
+  )
+}
